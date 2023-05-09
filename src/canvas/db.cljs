@@ -1,5 +1,6 @@
 (ns canvas.db
-  (:require [re-frame.core :as rf]))
+  (:require [re-frame.core :as rf]
+            [canvas.data :refer [data]]))
 
 (rf/reg-event-db
  :db/initialize-db
@@ -7,4 +8,4 @@
    db/default-db))
 
 (def default-db
-  {:elements []})
+  {:elements data})

@@ -1359,4 +1359,5 @@
   (->> data
        (map :shape-type)
        (into #{}))
+  (first data)
   )
