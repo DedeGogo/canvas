@@ -6,12 +6,21 @@
    [canvas.data   :as d]))
 
 
-#_(defn canvas-container
-    []
-    (let [style {:width  1000
-                 :height 1000
-                 :background-color "#333333"}]
-      [:canvas {:id "main" :style style}]))
+(def two-pi (* 2 (.-PI js/Math)))
+
+(defn draw-circle
+  [{:keys [ctx x y r fill]}]
+  (.beginPath ctx)
+  (.arc ctx x y r 0 two-pi)
+  (set! (.-fillStyle ctx) fill)
+  (.fill ctx))
+
+
+(defn draw-rectangle [{:keys [ctx x y width height fill]}]
+  (set! (.-fillStyle ctx) fill)
+  (.fillRect ctx x y width height))
+
+(defn define-color [{:keys [ctx fill]}] (set! (.-fillStyle ctx) fill))
 
 (defn canvas []
   (reagent/create-class
@@ -20,12 +29,11 @@
       (let [node (rdom/dom-node comp)
             ctx (.getContext node "2d")]
         (.translate ctx 0 100)
-        (.fillRect ctx 10 10 10 10)
-        (.fillRect ctx 691 -48 104 4)
-        (.fillRect ctx 691 -78 104 4)))
+        (draw-rectangle {:ctx ctx :x 100 :y 100 :width 230 :height 150 :fill "#005588"})
+        (draw-circle    {:ctx ctx :x 20 :y 10 :r 10 :fill "#550088"})))
     :reagent-render
     (fn []
-      [:canvas {:width 1000 :height 1500 :style {:background-color "grey"}}])}))
+      [:canvas {:width 1500 :height 800 :style {:background-color "grey"}}])}))
 
 (defn main-panel []
   [:div
@@ -38,7 +46,7 @@
   #_(def ctx (.getContext canvas "2d"))
 
   (.fillRect ctx 60 30 61 61)
-  (def two-pi (* 2 (.-PI js/Math)))
+  
   (def test-element (first d/data)))
 
 ;; Notes
@@ -105,7 +113,7 @@
   (.reset ctx)
 
 
-  (defn define-color [fill] (set! (.-fillStyle ctx) fill)))
+  )
 
 (comment
 
