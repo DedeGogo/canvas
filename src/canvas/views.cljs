@@ -19,8 +19,10 @@
     (fn [comp]
       (let [node (rdom/dom-node comp)
             ctx (.getContext node "2d")]
+        (.translate ctx 0 100)
         (.fillRect ctx 10 10 10 10)
-        (.fillRect ctx 691 48 104 4)))
+        (.fillRect ctx 691 -48 104 4)
+        (.fillRect ctx 691 -78 104 4)))
     :reagent-render
     (fn []
       [:canvas {:width 1000 :height 1500 :style {:background-color "grey"}}])}))
@@ -46,6 +48,7 @@
 
 ;; Todo: how to display negative y or x values? 
 ;;      use ctx.translate, where too? => find out min x and y vals in data
+;; -> x min: 619 x max 1376.5 y min: -78 y max: 331.5
 
 ;; Todo: Draw elements
 ;;      draw rectangle => .fillRect takes 4 args top left width height => rectangle
