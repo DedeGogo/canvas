@@ -9,18 +9,83 @@
 (def two-pi (* 2 (.-PI js/Math)))
 
 (defn draw-circle
-  [{:keys [ctx x y r fill]}]
+  [{:keys [ctx x y radius fill]}]
   (.beginPath ctx)
-  (.arc ctx x y r 0 two-pi)
+  (.arc ctx x y radius 0 two-pi)
   (set! (.-fillStyle ctx) fill)
   (.fill ctx))
 
 
-(defn draw-rectangle [{:keys [ctx x y width height fill]}]
+(defn draw-rectangle 
+  [{:keys [ctx x y width height fill]}]
   (set! (.-fillStyle ctx) fill)
   (.fillRect ctx x y width height))
 
-(defn define-color [{:keys [ctx fill]}] (set! (.-fillStyle ctx) fill))
+(defn group-border
+  [{:keys [ctx x y width height]}]
+  (set! (.-fillStyle ctx) "purple")
+  (.strokeRect ctx x y width height))
+
+(defn draw-element [ctx {:keys [  shape-type x y width height radius fill]}]  
+  (println { :shape-type shape-type :radius radius :ctx ctx :x x :y y :width width :height height :fill fill})
+  (cond
+    (= shape-type :rect)
+    (draw-rectangle {:ctx ctx :x x :y y :width width :height height :fill fill})
+    (= shape-type :circle)
+    (draw-circle    {:ctx ctx :x x :y y :radius radius :fill fill})
+    :else
+    (js/console.log "condition is not shit")))
+
+(defn draw-elements [ctx]
+  (map (partial draw-element ctx) d/data))
+
+
+(defn outline-group [e ctx]
+ (let [x (.-x e)
+       y (.-y e)] 
+   (js/console.log (str "x " x " y " y))
+   (cond
+       (and (> y 63) (< y 143) (> x 1162) (< x 1277))
+       (group-border {:ctx ctx :x 1140 :y -61 :width 134 :height 101})
+       (and (> y 150) (< y 270) (> x 163) (< x 277))
+       (group-border {:ctx ctx :x 140 :y 30 :width 134 :height 140})
+       (and (> y 302) (< y 523) (> x 452) (< x 672))
+       (group-border {:ctx ctx :x 430 :y 180 :width 240 :height 240})
+       :else
+       (do
+         (.clearRect ctx 0 0 1500 800)
+         (draw-rectangle  {:ctx ctx
+                           :shape-type :rect,
+                           :x 1150,
+                           :y -51,
+                           :width 114,
+                           :height 81,
+                           :fill "#C70A9D"})
+         (draw-rectangle  {:ctx ctx
+                           :shape-type :rect,
+                           :x 150,
+                           :y 40,
+                           :width 114,
+                           :height 120,
+                           :fill "#C70A9D"})
+         (draw-circle  {:ctx ctx
+                        :shape-type :rect,
+                        :x 550,
+                        :y 300,
+                        :radius 110,
+                        :fill "#C70A9D"})))))
+
+
+(comment 
+  (draw-elements "jahoo")
+  (map (partial draw-element "ctx") d/data)
+  ;; For some reason when I try to do a map inside the :component-did-mount,
+  ;; it just will not work. In the react dev tools there is an error that I cant interpret,
+  ;; but my understanding is that something is timing out
+(set! js/cdat (clj->js d/data))
+  
+
+  )
 
 (defn canvas []
   (reagent/create-class
@@ -29,11 +94,39 @@
       (let [node (rdom/dom-node comp)
             ctx (.getContext node "2d")]
         (.translate ctx 0 100)
-        (draw-rectangle {:ctx ctx :x 100 :y 100 :width 230 :height 150 :fill "#005588"})
-        (draw-circle    {:ctx ctx :x 20 :y 10 :r 10 :fill "#550088"})))
+        (draw-elements ctx)
+        (.addEventListener node "click" (fn [event] (outline-group event ctx)))
+        ;(map (fn [el] (draw-element (assoc el :ctx ctx ))) d/data) ;; it is not excecuted, but why?
+        ;(map #(js/console.log %)  ["one" "two" "three"]) 
+        ( draw-rectangle  {:ctx ctx
+                           :shape-type :rect,
+                           :x 1150,
+                           :y -51,
+                           :width 114,
+                           :height 81,
+                           :fill "#C70A9D",
+                           })
+        ;; bounds are top -54 left 1150 bottom 30 right 1264
+        ( draw-rectangle  {:ctx ctx
+                           :shape-type :rect,
+                           :x 150,
+                           :y 40,
+                           :width 114,
+                           :height 120,
+                           :fill "#C70A9D",
+                           })
+        ;; bounds aez top 40 left 150 bottom 160 right 264
+        ( draw-circle  {:ctx ctx
+                        :shape-type :rect,
+                        :x 550,
+                        :y 300,
+                        :radius 110,
+                        :fill "#C70A9D"})
+        ;; bounds are top 440 left 190 bottom 660 right 410
+        ))
     :reagent-render
     (fn []
-      [:canvas {:width 1500 :height 800 :style {:background-color "grey"}}])}))
+      [:canvas {:id "c" :width 1500 :height 800 :style {:border "5px solid grey"}}])}))
 
 (defn main-panel []
   [:div
@@ -70,9 +163,11 @@
 ;;               ctx.fill() or ctx.stroke if empty
 ;;              }
 
-;;       Make proper cljs fns and test them
+;;       Make proper cljs fns and test them  OK
 
 ;;       Make map fn to draw elements programatically
+     ;;  I can't figure out why I cannot iterate in the 
+  
 
 
 ;; Part 2 figure how to draw an outline around the perimetter or a group of shapes
@@ -95,62 +190,5 @@
 
 ;; Todo: update function that redraws the canvas with a strokeRect of the proper size over the right area
 ;; or just the components of clicked outside the bounds of a group
-
-
-(comment
-  #_{:shape-type :rect,
-     :x 691,
-     :y -48,
-     :width 104,
-     :height 4,
-     :fill "#120000",
-     :group 0}
-  (set! (.-fillStyle ctx) "rgb(0,0,255)")
-  (.beginPath ctx)
-  (.rect ctx 24 30 61 61)
-  (.fillRect ctx 691 -48 104 4)
-  (.fill ctx)
-  (.reset ctx)
-
-
-  )
-
-(comment
-
-  (define-color "red")
-
-  (.beginPath ctx)
-
-  (.rect ctx 20 30 104 61)
-
-
-  (defn draw-element [{:keys [shape-type x y width height radius fill]}]
-    (js/console.log (str {:shape shape-type :x x :y y :widht width :h height :r radius :fill fill}))
-    (define-color fill)
-    (if
-     (= shape-type :rect)
-      (.rect ctx x y width height)
-
-      (.arc ctx x y radius 0 two-pi))
-    (.fill ctx)))
-(comment
-  (def e-test {:shape-type :rect,
-               :x 20,
-               :y 30,
-               :width 10,
-               :height 61,
-               :fill "#1AAE9F", ;; teal
-               :group 0})
-
-  (map draw-element d/data)
-
-  (draw-element e-test)
-
-
-
-  (set! (.-fillStyle ctx) "grey")
-
-  (-> ctx
-      (.fillRect 7 6 104 61)))
 
 
